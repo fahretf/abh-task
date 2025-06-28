@@ -1,0 +1,48 @@
+services:
+  spring-app:
+    container_name: spring-app
+    build:
+      context: .
+      dockerfile: Dockerfile.javasvc
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/demodb
+      APP_NODE_URL: http://node-app:8081/
+    networks:
+      - abh-network
+    restart: on-failure
+    depends_on:
+      - postgres
+  node-app:
+    container_name: node-app
+    build:
+      context: .
+      dockerfile: Dockerfile.nodesvc
+    ports:
+      - "8081:8081"
+    networks:
+      - abh-network
+    restart: on-failure
+  postgres:
+    container_name: postgres
+    image: postgres:10
+    environment:
+      POSTGRES_DB: demodb
+      POSTGRES_USER: demouser
+      POSTGRES_PASSWORD: DemoPa$$$$
+    networks:
+      - abh-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demouser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres-data:
+networks:
+  abh-network:
+    name: abh-network
+    driver: bridge

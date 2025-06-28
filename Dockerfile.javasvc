@@ -1,0 +1,10 @@
+FROM maven:3.9-eclipse-temurin-8 AS buildstage
+RUN git clone https://github.com/kkenan/basic-microservices.git
+WORKDIR /basic-microservices/spring-boot-app
+RUN mvn clean install
+
+FROM eclipse-temurin:8-jre-alpine AS runstage
+WORKDIR /app
+COPY --from=buildstage /basic-microservices/spring-boot-app/target/spring-boot-app-1.0-SNAPSHOT.jar .
+EXPOSE 8080
+CMD ["java", "-jar", "spring-boot-app-1.0-SNAPSHOT.jar"]
